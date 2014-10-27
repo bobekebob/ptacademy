@@ -11,28 +11,37 @@ package sk.spsjm.ptacademy.chat.old.client;
 import java.io.*;
 import java.net.*;
 
+/**
+ * Simple chat client
+ */
 class TCPClient {
 
     public static void main(String argv[]) throws Exception {
         System.out.println("Starting client");
-        Socket clientSocket = new Socket("localhost", 6780);
-        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        String message;
-        InputReader inputReader = null;
-        while (! clientSocket.isClosed()) {
-            if (inputReader == null) {
-                inputReader = new InputReader(inFromServer);
-                inputReader.start();
-            }
-            message = inFromUser.readLine();
-            outToServer.writeBytes(message + '\n');
-            if (message.equals("/quit")) {
-                System.out.println("Closing connection");
-                inputReader.setKeepRunning(false);
-                clientSocket.close();
-                break;
+        // start client socket
+        try (Socket clientSocket = new Socket("localhost", 6780)){
+            // initialize streams
+            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+            BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            String message;
+            InputReader inputReader = null;
+            while (! clientSocket.isClosed()) {
+                // start reading network input in a separate loop
+                if (inputReader == null) {
+                    inputReader = new InputReader(inFromServer);
+                    inputReader.start();
+                }
+                // read user input
+                message = inFromUser.readLine();
+                // write user input
+                outToServer.writeBytes(message + '\n');
+                if (message.equals("/quit")) {
+                    System.out.println("Closing connection");
+                    inputReader.setKeepRunning(false);
+                    clientSocket.close();
+                    break;
+                }
             }
         }
     }

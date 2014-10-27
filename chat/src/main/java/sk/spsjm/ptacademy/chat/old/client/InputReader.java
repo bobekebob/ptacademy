@@ -12,8 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
- * @author michal.polkorab
- *
+ * Simple InputReader - reads incomming message from inputStream
  */
 public class InputReader extends Thread {
 
@@ -22,20 +21,24 @@ public class InputReader extends Thread {
 
     /**
      * @param inFromServer
-     * @param outToServer
      */
     public InputReader(BufferedReader inFromServer) {
+        // save client input
         this.inFromServer = inFromServer;
     }
 
     @Override
     public void run() {
+        // read until desired
         while (keepRunning) {
             try {
+                // check if there is message waiting to be read
                 if (inFromServer.ready()) {
+                    // read the message
                     String message = inFromServer.readLine();
                     System.out.println(">> " + message);
                 }
+                // free thread for some additional computation
                 sleep(100);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
